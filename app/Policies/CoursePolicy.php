@@ -13,7 +13,8 @@ class CoursePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->is_admin || $user->hasRole('student');
+        return true;
+        // return $user->is_admin || $user->hasRole('student');
     }
 
     /**

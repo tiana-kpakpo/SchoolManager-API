@@ -51,7 +51,7 @@ class CoursesSeeder extends Seeder
             DB::table('departments')->updateOrInsert(['code' => $department['code']], $department);
         }
 
-        // Example Courses with department_id
+       
         $courses = [
             ['name' => 'Introduction to Programming', 'code' => 'CS101', 'semester_id' => 1, 'description' => 'A beginner\'s course in programming.', 'department_code' => 'CS', 'year' => 1, 'semester' => 1],
             ['name' => 'Advanced Database Systems', 'code' => 'CS202', 'semester_id' => 2, 'description' => 'An advanced course on database systems.', 'department_code' => 'CS', 'year' => 2, 'semester' => 2],
@@ -59,7 +59,6 @@ class CoursesSeeder extends Seeder
             ['name' => 'Robotics', 'code' => 'CS204', 'semester_id' => 2, 'description' => 'Robotics.', 'department_code' => 'CS', 'year' => 2, 'semester' => 2],
             ['name' => 'Thermodynamics', 'code' => 'ME101', 'semester_id' => 1, 'description' => 'Fundamentals of Thermodynamics.', 'department_code' => 'ME', 'year' => 1, 'semester' => 1],
             ['name' => 'Fluid Mechanics', 'code' => 'ME202', 'semester_id' => 2, 'description' => 'Principles of Fluid Mechanics.', 'department_code' => 'ME', 'year' => 2, 'semester' => 2],
-            // Add more courses with appropriate department_code, year, and semester
         ];
 
         // Insert Courses

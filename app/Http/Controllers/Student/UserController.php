@@ -23,9 +23,9 @@ class UserController extends Controller
 
         // $this->authorize('viewAny', Course::class);
 
-        if ($request->user()->cannot('viewAny', $course)) {
-            abort(403);
-        }
+        // if ($request->user()->cannot('viewAny', $course)) {
+        //     abort(403);
+        // }
 
         $currentSemester = Semester::where('year', $currentYear)
             ->orderBy('id', 'desc')

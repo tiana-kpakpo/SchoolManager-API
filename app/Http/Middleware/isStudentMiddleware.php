@@ -16,9 +16,7 @@ class isStudentMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        
-        if (Auth::check() && Auth::user()->role === 'student') {
-            return $next($request);
-        }
-        return response()->json(['error' => 'Unauthorized'], 403);    }
+        return (Auth::user()->student_id) ?
+            $next($request) : response()->json(['error' => 'Unauthorized'], 403);
+    }
 }
