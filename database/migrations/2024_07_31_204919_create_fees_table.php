@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('fees', function (Blueprint $table) {
             $table->id();
             $table->string('department');
+            $table->foreignId('department_id')->constrained('departments')->cascadeOnDelete();
             $table->decimal('amount', 10, 2);
             $table->timestamps();
         });

@@ -11,95 +11,48 @@ use App\Models\Submission;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
     
-    public function index(Request $request, Course $course)
+    public function index(Request $request)
     {
-        $user = $request->user();
+        $request->validate([
+            'department_name' => 'required|string',
+            'year' => 'required|integer',
+            'semester_id' => 'required|integer',
+        ]);
 
-        $currentYear = now()->year;
-
-        // $this->authorize('viewAny', Course::class);
-
-        // if ($request->user()->cannot('viewAny', $course)) {
-        //     abort(403);
-        // }
-
-        $currentSemester = Semester::where('year', $currentYear)
-            ->orderBy('id', 'desc')
-            ->first();
-
-            if (!$currentSemester) {
-                return response()->json(['message' => 'No semester found for the current year.'], 404);
-            }
-        
-            $courses = Course::where('department_id', $user->department_id)
-                ->where('semester_id', $currentSemester->id)
-                ->where('year', $user->year_of_study)
-                ->get();
+        $courses = Course::whereHas('department', function ($query) use ($request) {
+            $query->where('name', $request->input('department_name'));
+        })
+        ->where('year', $request->input('year'))
+        ->where('semester_id', $request->input('semester_id'))
+        ->get();
 
         return response()->json($courses);
     }
 
-    public function register(Request $request, Course $course)
+
+    public function registerCourse(Request $request)
     {
-        $user = Auth::user();
-
-        // $this->authorize('viewAny', Course::class);
-
-        if ($request->user()->cannot('viewAny', $course)) {
-            abort(403);
-        }
-
-        $currentSemester = Semester::where('year', now()->year)
-        ->orderBy('id', 'desc')
-        ->first();
-
-    if (!$currentSemester) {
-        return response()->json(['message' => 'Current semester not found.'], 404);
-    }
-
-
-        $request->validate([
-            'courses' => 'required|array',
-            'courses.*.code' => 'nullable|string|exists:courses,code',
-            'courses.*.name' => 'nullable|string|exists:courses,name',
+         
+         $validator = Validator::make($request->all(), [
+            'course_ids' => 'required|array',
+            'course_ids.*' => 'exists:courses,id',
         ]);
-
-        $courseIds = [];
-        foreach ($request->courses as $course) {
-            if (isset($course['code'])) {
-                $courseModel = Course::where('code', $course['code'])
-                    ->where('department_id', $user->department_id)
-                    ->where('year', $user->year_of_study)
-                    ->where('semester_id', $currentSemester->id)
-                    ->first();
-            } elseif (isset($course['name'])) {
-                $courseModel = Course::where('name', $course['name'])
-                    ->where('department_id', $user->department_id)
-                    ->where('year', $user->year_of_study)
-                    ->where('semester_id', $currentSemester->id)
-                    ->first();
-            }
-
-            if (isset($courseModel)) {
-                $courseIds[] = $courseModel->id;
-            }
+    
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
         }
 
-         // Attach courses to the student
-        //  $user->courses()->attach($courseIds);
-         $user->courses->syncWithoutDetaching($courseIds);
+        $student = $request->user();
+    
+        $student->courses()->sync($request->input('course_ids'));
 
-
-         return response()->json([
-             'status' => 'success',
-             'message' => 'Courses registered successfully.',
-            //  'courses' => $user->courses()->whereIn('id', $courseIds)->get(),
-         ], 201);
-
+    
+        return response()->json(['success' => 'Course registered successfully.']);
     }
 
     public function submitAssignment(Request $request, Assignment $assignment)

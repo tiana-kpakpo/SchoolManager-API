@@ -15,7 +15,7 @@ class PaymentController extends Controller
         return response()->json($payments);
     }
 
-    public function store(Request $request)
+    public function makePayment(Request $request)
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
@@ -23,14 +23,17 @@ class PaymentController extends Controller
             'payment_method' => 'required|string|max:255',
         ]);
 
-        $payment = Payment::create($request->all());
+        $payment = new Payment();
+        $payment->student_id = $request->student_id;
+        $payment->amount = $request->amount;
+        $payment->save();
 
         // Update the user's outstanding fees
-        $user = User::findOrFail($request->user_id);
-        $user->outstanding_fees -= $request->amount;
-        $user->save();
+        // $user = User::findOrFail($request->user_id);
+        // $user->outstanding_fees -= $request->amount;
+        // $user->save();
 
-        return response()->json($payment, 201);
+        return response()->json(['message' => 'Payment successful', 'payment' => $payment]);
     }
 
     public function update(Request $request, $id)

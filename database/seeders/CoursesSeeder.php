@@ -2,8 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Course;
+use App\Models\Department;
+use App\Models\Semester;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class CoursesSeeder extends Seeder
 {
@@ -12,75 +14,153 @@ class CoursesSeeder extends Seeder
      */
     public function run()
     {
-        // Define departments
+        // Get the semesters
+        $springSemester = Semester::where('name', 'Spring')->where('year', 2024)->firstOrFail();
+        $fallSemester = Semester::where('name', 'Fall')->where('year', 2024)->firstOrFail();
+
         $departments = [
-            ['name' => 'Computer Science', 'code' => 'CS'],
-            ['name' => 'Mechanical Engineering', 'code' => 'ME'],
-            
+            'Computer Science' => 1,
+            'Mechanical Engineering' => 2,
+            'Business Administration' => 3,
+            'Arts' => 4,
+            'Medicine and Health' => 5,
+            'Law' => 6,
         ];
 
-        // Define semesters
-        $semesters = [
-            ['name' => 'Spring', 'year' => 2024],
-            ['name' => 'Fall', 'year' => 2024],
-           
+        $coursesData = [
+            'Computer Science' => [
+                1 => [
+                    1 => ['Introduction to Programming', 'Mathematics I', 'Physics I', 'Computer Science Basics'],
+                    2 => ['Data Structures', 'Mathematics II', 'Physics II', 'Introduction to Databases'],
+                ],
+                2 => [
+                    1 => ['Algorithms', 'Discrete Mathematics', 'Operating Systems', 'Digital Logic'],
+                    2 => ['Computer Networks', 'Software Engineering', 'Microprocessors', 'Database Systems'],
+                ],
+                3 => [
+                    1 => ['Algorithms', 'Discrete Mathematics', 'Operating Systems', 'Digital Logic'],
+                    2 => ['Computer Networks', 'Software Engineering', 'Microprocessors', 'Database Systems'],
+                ],
+                4 => [
+                    1 => ['Algorithms', 'Discrete Mathematics', 'Operating Systems', 'Digital Logic'],
+                    2 => ['Computer Networks', 'Software Engineering', 'Microprocessors', 'Database Systems'],
+                ],
+            ],
+            'Mechanical Engineering' => [
+                1 => [
+                    1 => ['Engineering Mechanics', 'Mathematics I', 'Physics I', 'Engineering Drawing'],
+                    2 => ['Thermodynamics', 'Mathematics II', 'Physics II', 'Materials Science'],
+                ],
+                2 => [
+                    1 => ['Fluid Mechanics', 'Mechanics of Solids', 'Manufacturing Processes', 'Thermodynamics II'],
+                    2 => ['Machine Design', 'Heat Transfer', 'Dynamics of Machinery', 'Control Systems'],
+                ],
+                3 => [
+                    1 => ['Fluid Mechanics', 'Mechanics of Solids', 'Manufacturing Processes', 'Thermodynamics II'],
+                    2 => ['Machine Design', 'Heat Transfer', 'Dynamics of Machinery', 'Control Systems'],
+                ],
+                4 => [
+                    1 => ['Fluid Mechanics', 'Mechanics of Solids', 'Manufacturing Processes', 'Thermodynamics II'],
+                    2 => ['Machine Design', 'Heat Transfer', 'Dynamics of Machinery', 'Control Systems'],
+                ],
+            ],
+            'Business Administration' => [
+                1 => [
+                    1 => ['Introduction to Business', 'Principles of Management', 'Microeconomics', 'Business Mathematics'],
+                    2 => ['Marketing Management', 'Financial Accounting', 'Organizational Behavior', 'Business Law'],
+                ],
+                2 => [
+                    1 => ['Business Statistics', 'Human Resource Management', 'Macroeconomics', 'Cost Accounting'],
+                    2 => ['Operations Management', 'Financial Management', 'Business Ethics', 'International Business'],
+                ],
+                3 => [
+                    1 => ['Business Statistics', 'Human Resource Management', 'Macroeconomics', 'Cost Accounting'],
+                    2 => ['Operations Management', 'Financial Management', 'Business Ethics', 'International Business'],
+                ],
+                4 => [
+                    1 => ['Business Statistics', 'Human Resource Management', 'Macroeconomics', 'Cost Accounting'],
+                    2 => ['Operations Management', 'Financial Management', 'Business Ethics', 'International Business'],
+                ],
+            ],
+            'Arts' => [
+                1 => [
+                    1 => ['Art History', 'Drawing I', 'Introduction to Sculpture', 'Color Theory'],
+                    2 => ['Painting I', 'Printmaking', 'Art Criticism', 'Ceramics'],
+                ],
+                2 => [
+                    1 => ['Photography', 'Digital Media', 'Advanced Drawing', 'Art and Society'],
+                    2 => ['Advanced Painting', 'Sculpture II', 'Installation Art', 'Art Therapy'],
+                ],
+                3 => [
+                    1 => ['Photography', 'Digital Media', 'Advanced Drawing', 'Art and Society'],
+                    2 => ['Advanced Painting', 'Sculpture II', 'Installation Art', 'Art Therapy'],
+                ],
+                4 => [
+                    1 => ['Photography', 'Digital Media', 'Advanced Drawing', 'Art and Society'],
+                    2 => ['Advanced Painting', 'Sculpture II', 'Installation Art', 'Art Therapy'],
+                ],
+            ],
+            'Medicine and Health' => [
+                1 => [
+                    1 => ['Anatomy I', 'Physiology I', 'Biochemistry', 'Medical Terminology'],
+                    2 => ['Anatomy II', 'Physiology II', 'Microbiology', 'Medical Ethics'],
+                ],
+                2 => [
+                    1 => ['Pathology', 'Pharmacology', 'Clinical Skills', 'Epidemiology'],
+                    2 => ['Internal Medicine', 'Pediatrics', 'Surgery', 'Obstetrics and Gynecology'],
+                ],
+                3 => [
+                    1 => ['Pathology', 'Pharmacology', 'Clinical Skills', 'Epidemiology'],
+                    2 => ['Internal Medicine', 'Pediatrics', 'Surgery', 'Obstetrics and Gynecology'],
+                ],
+                4 => [
+                    1 => ['Pathology', 'Pharmacology', 'Clinical Skills', 'Epidemiology'],
+                    2 => ['Internal Medicine', 'Pediatrics', 'Surgery', 'Obstetrics and Gynecology'],
+                ],
+            ],
+            'Law' => [
+                1 => [
+                    1 => ['Introduction to Law', 'Constitutional Law', 'Criminal Law', 'Legal Writing'],
+                    2 => ['Contract Law', 'Tort Law', 'Property Law', 'Legal Research'],
+                ],
+                2 => [
+                    1 => ['Civil Procedure', 'Administrative Law', 'International Law', 'Family Law'],
+                    2 => ['Corporate Law', 'Labor Law', 'Intellectual Property', 'Legal Ethics'],
+                ],
+                3 => [
+                    1 => ['Civil Procedure', 'Administrative Law', 'International Law', 'Family Law'],
+                    2 => ['Corporate Law', 'Labor Law', 'Intellectual Property', 'Legal Ethics'],
+                ],
+                4 => [
+                    1 => ['Civil Procedure', 'Administrative Law', 'International Law', 'Family Law'],
+                    2 => ['Corporate Law', 'Labor Law', 'Intellectual Property', 'Legal Ethics'],
+                ],
+            ],
         ];
 
-        // Define academic years
-        $academicYears = [
-            ['name' => '2023/2024'],
-            ['name' => '2024/2025'],
-           
-        ];
+        foreach ($coursesData as $departmentName => $years) {
+            $departmentId = $departments[$departmentName];
+            foreach ($years as $year => $semesters) {
+                foreach ($semesters as $semesterNumber => $courses) {
+                    $semesterId = $semesterNumber === 1 ? $springSemester->id : $fallSemester->id;
+                    foreach ($courses as $courseName) {
+                        // Generate unique code
+                        do {
+                            $code = strtoupper(substr($departmentName, 0, 3)) . str_pad(rand(101, 499), 3, '0', STR_PAD_LEFT);
+                            $exists = Course::where('code', $code)->exists();
+                        } while ($exists);
 
-        // Insert Academic Years
-        foreach ($academicYears as $academicYear) {
-            DB::table('academic_years')->updateOrInsert(['name' => $academicYear['name']], $academicYear);
-        }
-
-        // Insert Semesters
-        foreach ($semesters as $semester) {
-            DB::table('semesters')->updateOrInsert([
-                'name' => $semester['name'],
-                'year' => $semester['year'],
-            ], $semester);
-        }
-
-        // Insert Departments
-        foreach ($departments as $department) {
-            DB::table('departments')->updateOrInsert(['code' => $department['code']], $department);
-        }
-
-       
-        $courses = [
-            ['name' => 'Introduction to Programming', 'code' => 'CS101', 'semester_id' => 1, 'description' => 'A beginner\'s course in programming.', 'department_code' => 'CS', 'year' => 1, 'semester' => 1],
-            ['name' => 'Advanced Database Systems', 'code' => 'CS202', 'semester_id' => 2, 'description' => 'An advanced course on database systems.', 'department_code' => 'CS', 'year' => 2, 'semester' => 2],
-            ['name' => 'Mathematics 1', 'code' => 'CS201', 'semester_id' => 1, 'description' => 'Basic Mathematics.', 'department_code' => 'CS', 'year' => 1, 'semester' => 1],
-            ['name' => 'Robotics', 'code' => 'CS204', 'semester_id' => 2, 'description' => 'Robotics.', 'department_code' => 'CS', 'year' => 2, 'semester' => 2],
-            ['name' => 'Thermodynamics', 'code' => 'ME101', 'semester_id' => 1, 'description' => 'Fundamentals of Thermodynamics.', 'department_code' => 'ME', 'year' => 1, 'semester' => 1],
-            ['name' => 'Fluid Mechanics', 'code' => 'ME202', 'semester_id' => 2, 'description' => 'Principles of Fluid Mechanics.', 'department_code' => 'ME', 'year' => 2, 'semester' => 2],
-        ];
-
-        // Insert Courses
-        foreach ($courses as $course) {
-            // Get the department_id based on department_code
-            $department = DB::table('departments')->where('code', $course['department_code'])->first();
-
-            if ($department) {
-                DB::table('courses')->updateOrInsert([
-                    'name' => $course['name'],
-                    'code' => $course['code'],
-                    'semester_id' => $course['semester_id'],
-                    'department_id' => $department->id,
-                ], [
-                    'name' => $course['name'],
-                    'code' => $course['code'],
-                    'description' => $course['description'],
-                    'semester_id' => $course['semester_id'],
-                    'department_id' => $department->id,
-                    'year' => $course['year'],
-                    'semester' => $course['semester'],
-                ]);
+                        Course::updateOrCreate(
+                            ['code' => $code], 
+                            [
+                                'name' => $courseName,
+                                'semester_id' => $semesterId,
+                                'department_id' => $departmentId,
+                                'year' => $year,
+                            ]
+                        );
+                    }
+                }
             }
         }
     }

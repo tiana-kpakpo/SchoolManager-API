@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Department;
 use App\Models\Course;
 use App\Models\Semester;
+use Illuminate\Support\Facades\Log;
 
 class DepartmentCourseSeeder extends Seeder
 {
@@ -59,26 +60,36 @@ class DepartmentCourseSeeder extends Seeder
 
         // Insert Departments and Courses
         foreach ($departments as $departmentData) {
-            $department = Department::updateOrInsert(['code' => $departmentData['code']], $departmentData);
+            $departments = Department::updateOrCreate(['code' => $departmentData['code']], $departmentData);
 
             // Insert Fees
             DB::table('fees')->updateOrInsert([
-                'department_id' => $department->id,
+                'department_id' => $departments->id,
+            ], [
                 'amount' => $fees[$departmentData['code']],
             ]);
 
             $coursesData = $this->getCoursesData();
 
-            foreach ($coursesData[$departmentData['name']] as $year => $semesters) {
-                foreach ($semesters as $semester => $courses) {
+            foreach ($coursesData[$departments->name] as $year => $semesters) {
+                foreach ($semesters as $semesterName => $courses) {
+                    $semester = Semester::where('name', $semesterName)
+                        ->where('year', 2024)
+                        ->first();
+
+                    if (!$semester) {
+                        Log::error("Semester not found: $semesterName for year: 2024");
+                        continue;
+                    }
+
                     foreach ($courses as $index => $courseName) {
                         Course::updateOrInsert([
                             'name' => $courseName,
-                            'code' => strtoupper(substr($departmentData['name'], 0, 3)) . "-Y{$year}S{$semester}C" . ($index + 1),
-                            'description' => "Description for $courseName in Department {$departmentData['name']} Year $year Semester $semester",
-                            'department_id' => $department->id,
+                            'code' => strtoupper(substr($departments->name, 0, 3)) . "-Y{$year}S{$semesterName}C" . ($index + 1),
+                            'description' => "Description for $courseName in Department {$departments->name} Year $year Semester $semesterName",
+                            'department_id' => $departments->id,
                             'year' => $year,
-                            'semester' => $semester,
+                            'semester_id' => $semester->id,
                         ]);
                     }
                 }
@@ -181,20 +192,20 @@ class DepartmentCourseSeeder extends Seeder
             ],
             'Law' => [
                 1 => [
-                    1 => ['Introduction to Law', 'Legal Research and Writing', 'Constitutional Law', 'Contracts'],
-                    2 => ['Criminal Law', 'Property Law', 'Civil Procedure', 'Legal Ethics'],
+                    1 => ['Introduction to Law', 'Constitutional Law', 'Criminal Law', 'Legal Writing'],
+                    2 => ['Contract Law', 'Tort Law', 'Property Law', 'Legal Research'],
                 ],
                 2 => [
-                    1 => ['Evidence', 'Family Law', 'Commercial Law', 'Human Rights Law'],
-                    2 => ['International Law', 'Administrative Law', 'Environmental Law', 'Intellectual Property Law'],
+                    1 => ['Civil Procedure', 'Administrative Law', 'International Law', 'Family Law'],
+                    2 => ['Corporate Law', 'Labor Law', 'Intellectual Property', 'Legal Ethics'],
                 ],
                 3 => [
-                    1 => ['Evidence', 'Family Law', 'Commercial Law', 'Human Rights Law'],
-                    2 => ['International Law', 'Administrative Law', 'Environmental Law', 'Intellectual Property Law'],
+                    1 => ['Civil Procedure', 'Administrative Law', 'International Law', 'Family Law'],
+                    2 => ['Corporate Law', 'Labor Law', 'Intellectual Property', 'Legal Ethics'],
                 ],
                 4 => [
-                    1 => ['Evidence', 'Family Law', 'Commercial Law', 'Human Rights Law'],
-                    2 => ['International Law', 'Administrative Law', 'Environmental Law', 'Intellectual Property Law'],
+                    1 => ['Civil Procedure', 'Administrative Law', 'International Law', 'Family Law'],
+                    2 => ['Corporate Law', 'Labor Law', 'Intellectual Property', 'Legal Ethics'],
                 ],
             ],
         ];

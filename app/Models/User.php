@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -90,6 +91,19 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Course::class, 'course_student', 'student_id', 'course_id')
                     ->withTimestamps();
+    }
+
+    public function payments():HasMany
+    {
+        return $this->hasMany(Payment::class, 'user_id');
+    }
+
+    
+    public function getOutstandingFeesAttribute()
+    {
+        $initialFees = $this->department->fees; // Assuming you have a `fees` field in the department
+        $paidAmount = $this->payments()->sum('amount');
+        return $initialFees - $paidAmount;
     }
 
     // public function submissions()

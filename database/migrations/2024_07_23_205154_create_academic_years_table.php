@@ -33,7 +33,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('academic_years');
-        Schema::dropIfExists('courses');
+        // Schema::dropIfExists('courses');
         Schema::dropIfExists('semesters');
     }
 };

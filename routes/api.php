@@ -21,18 +21,18 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
         // Fees routes
-        Route::get('fees', [FeesController::class, 'index']);
-        Route::get('fees/{id}', [FeesController::class, 'showStdFees']);
-        Route::post('fees', [FeesController::class, 'store']);
-        Route::put('fees/{id}', [FeesController::class, 'update']);
-        Route::delete('fees/{id}', [FeesController::class, 'destroy']);
+        Route::get('/fees', [FeesController::class, 'index']);
+        Route::get('/fees/{id}', [FeesController::class, 'showStdFees']);
+        Route::post('/fees', [FeesController::class, 'store']);
+        Route::put('/fees/{id}', [FeesController::class, 'update']);
+        Route::delete('/fees/{id}', [FeesController::class, 'destroy']);
 
         // Payment routes
-        Route::get('payments', [PaymentController::class, 'index']);
-        Route::post('payments', [PaymentController::class, 'store']);
-        Route::put('payments/{id}', [PaymentController::class, 'update']);
-        Route::delete('payments/{id}', [PaymentController::class, 'destroy']);
-        Route::get('payments/user/{userId}', [PaymentController::class, 'showByUser']);
+        Route::get('outstanding-fees/{student_id}', [PaymentController::class, 'index']);
+        Route::post('payments', [PaymentController::class, 'makePayment']);
+        // Route::put('payments/{id}', [PaymentController::class, 'update']);
+        // Route::delete('payments/{id}', [PaymentController::class, 'destroy']);
+        // Route::get('payments/user/{userId}', [PaymentController::class, 'showByUser']);
     });
 
 
@@ -46,13 +46,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Student routes
     Route::prefix('student')->middleware('is_student')->group(function () {
-        Route::get('fees/{id}', [FeesController::class, 'showMyFees']);
+        Route::get('fees/{user_id}', [FeesController::class, 'showMyFees']);
         Route::get('payments', [PaymentController::class, 'index']);
         Route::get('fees/outstanding/{id}', [FeesController::class, 'showOutstandingFees']); 
         Route::get('payments/user/{userId}', [PaymentController::class, 'showByUser']);
 
-        Route::get('/courses', [StudentUserController::class, 'index']);
-        Route::post('register-course', [StudentUserController::class, 'register']);
+        Route::post('/courses', [StudentUserController::class, 'index']);
+        Route::post('/register-courses', [StudentUserController::class, 'registerCourse']);
 
         Route::get('assignments', [AssignmentController::class, 'index']);
         Route::get('assignments/{assignment}', [AssignmentController::class, 'show']);

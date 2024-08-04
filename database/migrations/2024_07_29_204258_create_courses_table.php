@@ -17,9 +17,9 @@ return new class extends Migration
             $table->string('code')->unique();
             $table->text('description')->nullable();
             $table->foreignId('department_id')->constrained('departments')->cascadeOnDelete();
-            $table->unsignedBigInteger('semester_id'); 
+            $table->foreignId('semester_id')->constrained()->cascadeOnDelete(); 
             $table->integer('year');
-            $table->integer('semester');
+            // $table->integer('semester');
             $table->timestamps();
         });
 

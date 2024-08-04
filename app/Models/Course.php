@@ -18,11 +18,15 @@ class Course extends Model
         return $this->belongsTo(Department::class);
     }
 
-    public function students():BelongsToMany
+
+    public function semester()
+    {
+        return $this->belongsTo(Semester::class);
+    }
+
+    public function students(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'course_student', 'course_id', 'student_id')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
-    
-    
 }

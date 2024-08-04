@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\User;
 use Illuminate\Console\Command;
 
 class IncrementYearOfStudy extends Command
@@ -18,13 +19,16 @@ class IncrementYearOfStudy extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Increment the year of study for all students';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        //
+       User::where('is_admin', false || 'lecturer_id' === null)->increment('year_of_study');
+
+       $this->info('Year of study updated successfully');
+
     }
 }
