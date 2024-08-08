@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -22,8 +23,8 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'email', 'password', 'profile_picture', 'phone', 'address', 'birth_date', 'age',
         'is_admin', 'nationality', 'department', 'qualification', 'student_id', 'year_of_study', 'guardian_contact',
-         'date_of_admission', 'outstanding_fees'
-            ];
+        'date_of_admission', 'outstanding_fees'
+    ];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -48,7 +49,7 @@ class User extends Authenticatable
         ];
     }
 
-    public function roles():BelongsToMany
+    public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'role_user');
     }
@@ -60,18 +61,23 @@ class User extends Authenticatable
 
     public function hasPermission($permission)
     {
-        return $this->roles()->whereHas('permissions', function($query) use($permission){
+        return $this->roles()->whereHas('permissions', function ($query) use ($permission) {
             $query->where('name', $permission);
         })->exists();
     }
 
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class, 'department', 'name');
+    }
 
-    protected static function boot () {
+    protected static function boot()
+    {
         parent::boot();
 
-        static::creating(function ($user){
+        static::creating(function ($user) {
             $fees = Fee::where('department', $user->department)->first();
-            if($fees) {
+            if ($fees) {
                 $user->outstanding_fees = $fees->amount;
             }
         });
@@ -85,25 +91,42 @@ class User extends Authenticatable
             }
         });
     }
-    
+
 
     public function courses(): BelongsToMany
     {
         return $this->belongsToMany(Course::class, 'course_student', 'student_id', 'course_id')
-                    ->withTimestamps();
+            ->withPivot('semester', 'year')
+            ->withTimestamps();
     }
 
-    public function payments():HasMany
+    public function payments(): HasMany
     {
         return $this->hasMany(Payment::class, 'user_id');
     }
 
-    
+
     public function getOutstandingFeesAttribute()
     {
-        $initialFees = $this->department->fees; // Assuming you have a `fees` field in the department
-        $paidAmount = $this->payments()->sum('amount');
-        return $initialFees - $paidAmount;
+        if ($this->is_admin) {
+            return 0;
+        }
+
+        $department = $this->department;
+
+        $department = Department::where('name', $this->department)->first();
+
+
+        if ($department) {
+            $fees = Fee::where('department_id', $department->id)->first();
+            if ($fees) {
+                $initialFees = $fees->amount;
+                $paidAmount = $this->payments()->sum('amount');
+                return $initialFees - $paidAmount;
+            }
+        }
+
+        return 0;
     }
 
     // public function submissions()

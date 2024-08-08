@@ -139,6 +139,9 @@ class CoursesSeeder extends Seeder
         ];
 
         foreach ($coursesData as $departmentName => $years) {
+            if ($departmentName === 'Administration') {
+                continue;
+            }
             $departmentId = $departments[$departmentName];
             foreach ($years as $year => $semesters) {
                 foreach ($semesters as $semesterNumber => $courses) {

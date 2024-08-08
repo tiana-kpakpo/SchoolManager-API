@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Lecturer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Assignment;
+use App\Models\Course;
 use App\Models\Exam;
 use App\Models\Grade;
 use App\Models\Submission;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -50,4 +52,21 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Submission graded successfully', 'grade' => $grade]);
     }
+
+    public function showLecturerCourses($lecturer_id)
+    {
+        $lecturer = User::find($lecturer_id);
+
+        if (!$lecturer) {
+            return response()->json(['error' => 'Lecturer not found.'], 404);
+        }
+
+        $assignedCourses = Course::where('lecturer_id', $lecturer_id)->get();
+
+        return response()->json([
+            'lecturer' => $lecturer,
+            'assigned_courses' => $assignedCourses
+        ]);
+    }
+
 }

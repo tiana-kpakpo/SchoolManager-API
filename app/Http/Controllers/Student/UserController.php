@@ -41,6 +41,8 @@ class UserController extends Controller
          $validator = Validator::make($request->all(), [
             'course_ids' => 'required|array',
             'course_ids.*' => 'exists:courses,id',
+            'semester' => 'required|integer',
+            'year' => 'required|integer',
         ]);
     
         if ($validator->fails()) {
@@ -48,8 +50,25 @@ class UserController extends Controller
         }
 
         $student = $request->user();
+
+        $existingCourseIds = $student->courses()
+        ->wherePivot('semester', $request->input('semester'))
+        ->wherePivot('year', $request->input('year'))
+        ->pluck('course_id')
+        ->toArray();
+
+        $newCourseIds = array_diff($request->input('course_ids'), $existingCourseIds);
+
+        if (empty($newCourseIds)) {
+            return response()->json(['message' => 'You have already registered for these courses.'], 400);
+        }
     
-        $student->courses()->sync($request->input('course_ids'));
+        // $student->courses()->sync($request->input('course_ids'));
+
+        $student->courses()->attach($newCourseIds, [
+            'semester' => $request->input('semester'),
+            'year' => $request->input('year'),
+        ]);
 
     
         return response()->json(['success' => 'Course registered successfully.']);
@@ -70,6 +89,7 @@ class UserController extends Controller
         return response()->json(['message' => 'Assignment submitted successfully', 'submission' => $submission]);
     }
 
+
     public function viewAssignments()
     {
         $user = auth()->user();
@@ -79,6 +99,7 @@ class UserController extends Controller
 
         return response()->json(['assignments' => $assignments]);
     }
+    
 
     public function viewExams()
     {

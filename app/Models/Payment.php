@@ -11,9 +11,9 @@ class Payment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'transaction_id', 'amount', 'payment_method'];
+    protected $fillable = ['user_id', 'transaction_id', 'amount', 'payment_method', 'fees_id', 'outstanding_fees'];
 
-    protected static function boot ()
+    protected static function boot()
     {
         parent::boot();
 
@@ -32,4 +32,10 @@ class Payment extends Model
     {
         return $this->belongsTo(Fee::class, 'fees_id');
     }
+
+
+    // public function department()
+    // {
+    //     return $this->belongsTo(Department::class, 'fees_id', 'id');
+    // }
 }

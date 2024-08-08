@@ -27,6 +27,7 @@ class Course extends Model
     public function students(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'course_student', 'course_id', 'student_id')
+            ->withPivot('semester', 'year')
             ->withTimestamps();
     }
 }

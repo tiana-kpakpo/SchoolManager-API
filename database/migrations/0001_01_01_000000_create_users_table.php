@@ -23,7 +23,7 @@ return new class extends Migration
             $table->date('birth_date')->nullable();
             $table->string('age')->nullable();
             $table->boolean('is_admin')->default(false); 
-            $table->decimal('outstanding_fees')->default(0.00); 
+            $table->decimal('outstanding_fees', 10, 2)->default(0.00); 
             $table->string('department')->nullable();
             $table->string('qualification')->nullable();
             $table->string('student_id')->unique()->nullable();

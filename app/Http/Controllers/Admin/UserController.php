@@ -9,6 +9,7 @@ use App\Models\Fee;
 use App\Models\Role;
 use App\Models\User;
 use Carbon\Carbon;
+use Dotenv\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -32,7 +33,7 @@ class UserController extends Controller
             'qualification' => 'nullable|string',
             'year_of_study' => 'nullable|integer|min:1|max:4',
             'guardian_contact' => 'nullable|string',
-            // 'date_of_admission' => 'nullable|date',
+            'role' => 'required|string|in:student,lecturer,admin',
         ]);
 
         // Default values
@@ -54,6 +55,7 @@ class UserController extends Controller
         } elseif ($request ->input('role')==='lecturer'){
             $input['lecturer_id'] = $this->generateLecturerId();
             $input['outstanding_fees'] = null;
+            $input['year_of_study'] = null;
             // $input['department'] = $input['department'] ?? null; 
 
         }  
@@ -64,9 +66,12 @@ class UserController extends Controller
         $user = User::create(array_merge(
             $input, 
             ['password' => Hash::make($input['password'])]
-        ));
-
-       
+        )); 
+        
+        $role = Role::where('name', $request->input('role'))->first();
+        if ($role) {
+            $user->roles()->attach($role->id);
+        }
 
         return response()->json([
             'status' => 'success',
@@ -84,6 +89,7 @@ class UserController extends Controller
     {
         return 'LCT' . strtoupper(uniqid());
     }
+
 
     public function storeCourse(Request $request)
     {
@@ -114,4 +120,57 @@ class UserController extends Controller
                 'course' => $course,
             ], 201);
     }
+
+
+
+public function lecturerCourses(Request $request)
+{
+    // Validate the request
+    $validatedData = $request->validate([
+        'lecturer_id' => 'required|exists:users,id',
+        'course_ids' => 'required|array',
+        'course_ids.*' => 'exists:courses,id',
+    ]);
+
+    $lecturerId = $validatedData['lecturer_id'];
+    $courseIds = $validatedData['course_ids'];
+
+    // Find the lecturer
+    $lecturer = User::find($lecturerId);
+
+    if (!$lecturer) {
+        return response()->json(['error' => 'Lecturer not found.'], 404);
+    }
+
+    // Assign courses to the lecturer
+    foreach ($courseIds as $courseId) {
+        $course = Course::find($courseId);
+        if ($course) {
+            $course->lecturer_id = $lecturer->id;
+            $course->save();
+        }
+    }
+
+    // Fetch the assigned courses
+    $assignedCourses = Course::where('lecturer_id', $lecturerId)->get();
+
+    return response()->json([
+        'success' => 'Courses assigned to lecturer successfully.',
+        'assigned_courses' => $assignedCourses
+    ]);
+}
+
+public function getAllLecturers()
+{
+    $lecturers = User::where('is_admin', false)
+                      ->whereNotNull('lecturer_id')
+                      ->get();
+
+    return response()->json([
+        'lecturers' => $lecturers
+    ]);
+}
+
+
+
 }

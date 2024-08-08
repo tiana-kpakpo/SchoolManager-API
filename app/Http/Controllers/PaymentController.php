@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Department;
+use App\Models\Fee;
 use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
 {
@@ -15,26 +18,47 @@ class PaymentController extends Controller
         return response()->json($payments);
     }
 
+
     public function makePayment(Request $request)
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'amount' => 'required|numeric',
+            'fees_id' => 'required|exists:fees,id',
+            'amount' => 'required|numeric|min:0',
             'payment_method' => 'required|string|max:255',
         ]);
 
-        $payment = new Payment();
-        $payment->student_id = $request->student_id;
-        $payment->amount = $request->amount;
-        $payment->save();
+        $user = User::find($request->user_id);
 
-        // Update the user's outstanding fees
-        // $user = User::findOrFail($request->user_id);
-        // $user->outstanding_fees -= $request->amount;
-        // $user->save();
+        $department = Department::where('name', $user->department)->first();
 
-        return response()->json(['message' => 'Payment successful', 'payment' => $payment]);
+        if (!$department) {
+            return response()->json(['message' => 'Department not found'], 404);
+        }
+
+        $fees = Fee::where('department_id', $department->id)->first();
+
+        if (!$fees) {
+            return response()->json(['message' => 'Fees for the department not found'], 404);
+        }
+
+        $outstandingFees = $user->outstanding_fees;
+        $newOutstandingFees = $outstandingFees - $request->amount;
+        $user->update(['outstanding_fees' => $newOutstandingFees]);
+
+        $payment = Payment::create([
+            'user_id' => $request->user_id,
+            'fees_id' => $request->user_id,
+            'amount' => $request->amount,
+            'outstanding_fees' => $newOutstandingFees,
+        ]);
+
+        $user->outstanding_fees = $newOutstandingFees;
+        $user->save();
+
+        return response()->json(['message' => 'Payment recorded successfully!', 'payment' => $payment]);
     }
+
 
     public function update(Request $request, $id)
     {
@@ -49,6 +73,7 @@ class PaymentController extends Controller
         return response()->json($payment);
     }
 
+
     public function destroy($id)
     {
         $payment = Payment::findOrFail($id);
@@ -57,9 +82,12 @@ class PaymentController extends Controller
         return response()->json(null, 204);
     }
 
-    public function showByUser($userId)
+
+    public function viewPayments()
     {
-        $payments = Payment::where('user_id', $userId)->get();
-        return response()->json($payments);
+        $user = Auth::user();
+        $payments = Payment::where('user_id', $user->id)->get();
+
+        return response()->json(['payments' => $payments, 'outstanding_fees' => $user->outstanding_fees]);
     }
 }
