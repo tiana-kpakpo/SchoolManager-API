@@ -23,7 +23,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'email', 'password', 'profile_picture', 'phone', 'address', 'birth_date', 'age',
         'is_admin', 'nationality', 'department', 'qualification', 'student_id', 'year_of_study', 'guardian_contact',
-        'date_of_admission', 'outstanding_fees'
+        'date_of_admission', 'outstanding_fees', 'lecturer_id',
     ];
 
     /**

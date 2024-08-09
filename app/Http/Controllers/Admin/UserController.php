@@ -9,7 +9,6 @@ use App\Models\Fee;
 use App\Models\Role;
 use App\Models\User;
 use Carbon\Carbon;
-use Dotenv\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -45,29 +44,39 @@ class UserController extends Controller
             $input['qualification'] = null;
 
             if ($request->has('department')) {
-                $fee = Fee::where('department', $request->department)->first();
+                $department = Department::where('name', $request->input('department'))->first();
+
+                if (!$department) {
+                    return response()->json(['message' => 'invalide department name'], 400);
+                }
+
+                $fee = Fee::where('department', $request->input('department'))->first();
                 if ($fee) {
                     $input['outstanding_fees'] = $fee->amount;
                 }
-                
             }
-    
-        } elseif ($request ->input('role')==='lecturer'){
+        } elseif ($request->input('role') === 'lecturer') {
             $input['lecturer_id'] = $this->generateLecturerId();
-            $input['outstanding_fees'] = null;
             $input['year_of_study'] = null;
-            // $input['department'] = $input['department'] ?? null; 
+            $input['outstanding_fees'] = null;
 
-        }  
-
-        $input['is_admin'] = $request->input('role') === 'admin';
+            if ($request->has('department')) {
+                $department = Department::where('name', $request->department)->first();
+                if (!$department) {
+                    return response()->json(['error' => 'Department not found.'], 404);
+                }
+            }
+        } elseif ($input['is_admin'] = $request->input('role') === 'admin') {
+            $input['department'] = 'Administration';
+            $input['year_of_study'] = null;
+        }
 
         // Create user
         $user = User::create(array_merge(
-            $input, 
+            $input,
             ['password' => Hash::make($input['password'])]
-        )); 
-        
+        ));
+
         $role = Role::where('name', $request->input('role'))->first();
         if ($role) {
             $user->roles()->attach($role->id);
@@ -80,20 +89,21 @@ class UserController extends Controller
         ], 201);
     }
 
-    private function generateStudentId()
-    {
-        return 'STD' . strtoupper(uniqid());
-    }
-
     private function generateLecturerId()
     {
         return 'LCT' . strtoupper(uniqid());
     }
 
 
+    private function generateStudentId()
+    {
+        return 'STD' . strtoupper(uniqid());
+    }
+
+
     public function storeCourse(Request $request)
     {
-         $request->validate([
+        $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -105,72 +115,68 @@ class UserController extends Controller
 
         $department = Department::where('code', $request->input('department_code'))->firstOrFail();
 
-             $course = Course::create([
-                'name' => $request->input('name'),
-                'code' => $request->input('code'),
-                'description' => $request->input('description'),
-                'department_id' => $department->id,
-                'semester_id' => $request->input('semester_id'),
-                'year' => $request->input('year'),
-                'semester' => $request->input('semester'),
-            ]);
+        $course = Course::create([
+            'name' => $request->input('name'),
+            'code' => $request->input('code'),
+            'description' => $request->input('description'),
+            'department_id' => $department->id,
+            'semester_id' => $request->input('semester_id'),
+            'year' => $request->input('year'),
+            'semester' => $request->input('semester'),
+        ]);
 
-            return response()->json([
-                'message' => 'Course created successfully',
-                'course' => $course,
-            ], 201);
+        return response()->json([
+            'message' => 'Course created successfully',
+            'course' => $course,
+        ], 201);
     }
 
 
+    public function lecturerCourses(Request $request)
+    {
+        // Validate the request
+        $validatedData = $request->validate([
+            'lecturer_id' => 'required|exists:users,id',
+            'course_ids' => 'required|array',
+            'course_ids.*' => 'exists:courses,id',
+        ]);
 
-public function lecturerCourses(Request $request)
-{
-    // Validate the request
-    $validatedData = $request->validate([
-        'lecturer_id' => 'required|exists:users,id',
-        'course_ids' => 'required|array',
-        'course_ids.*' => 'exists:courses,id',
-    ]);
+        $lecturerId = $validatedData['lecturer_id'];
+        $courseIds = $validatedData['course_ids'];
 
-    $lecturerId = $validatedData['lecturer_id'];
-    $courseIds = $validatedData['course_ids'];
+        // Find the lecturer
+        $lecturer = User::find($lecturerId);
 
-    // Find the lecturer
-    $lecturer = User::find($lecturerId);
-
-    if (!$lecturer) {
-        return response()->json(['error' => 'Lecturer not found.'], 404);
-    }
-
-    // Assign courses to the lecturer
-    foreach ($courseIds as $courseId) {
-        $course = Course::find($courseId);
-        if ($course) {
-            $course->lecturer_id = $lecturer->id;
-            $course->save();
+        if (!$lecturer) {
+            return response()->json(['error' => 'Lecturer not found.'], 404);
         }
+
+        // Assign courses to the lecturer
+        foreach ($courseIds as $courseId) {
+            $course = Course::find($courseId);
+            if ($course) {
+                $course->lecturer_id = $lecturer->id;
+                $course->save();
+            }
+        }
+
+        // Fetch the assigned courses
+        $assignedCourses = Course::where('lecturer_id', $lecturerId)->get();
+
+        return response()->json([
+            'success' => 'Courses assigned to lecturer successfully.',
+            'assigned_courses' => $assignedCourses
+        ]);
     }
 
-    // Fetch the assigned courses
-    $assignedCourses = Course::where('lecturer_id', $lecturerId)->get();
+    public function getAllLecturers()
+    {
+        $lecturers = User::where('is_admin', false)
+            ->whereNotNull('lecturer_id')
+            ->get();
 
-    return response()->json([
-        'success' => 'Courses assigned to lecturer successfully.',
-        'assigned_courses' => $assignedCourses
-    ]);
-}
-
-public function getAllLecturers()
-{
-    $lecturers = User::where('is_admin', false)
-                      ->whereNotNull('lecturer_id')
-                      ->get();
-
-    return response()->json([
-        'lecturers' => $lecturers
-    ]);
-}
-
-
-
+        return response()->json([
+            'lecturers' => $lecturers
+        ]);
+    }
 }

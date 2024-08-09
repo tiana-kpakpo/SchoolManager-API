@@ -24,7 +24,8 @@ class AdminSeeder extends Seeder
             'email' => 'admin@example.com',
             'password' => Hash::make('adminpassword'), // Default password
             'is_admin' => true,
-            'department' => $department,
+            'department' => $department->name,
+            // 'code' => 'ADMIN'
             
         ]);
     }
