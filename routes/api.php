@@ -14,15 +14,18 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/password/change', [AuthController::class, 'changePassword'])->middleware('auth:sanctum');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
+
 Route::middleware('auth:sanctum')->group(function () {
     // Admin routes
     Route::prefix('admin')->middleware('is_admin')->group(function () {
         Route::post('/register', [UserController::class, 'register']);
         Route::post('/courses', [UserController::class, 'storeCourse']);
-
-
+        Route::patch('/edit-user/{id}', [UserController::class, 'updateUser']);
+        
+        
         Route::post('/assign-courses', [UserController::class, 'lecturerCourses']);
         Route::get('/lecturers', [UserController::class, 'getAllLecturers']);
+        Route::get('/students', [UserController::class, 'getAllStudents']);
 
 
         // Fees routes
@@ -58,12 +61,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/fees-outstanding', [PaymentController::class, 'viewPayments']); 
 
 
-        Route::get('assignments', [AssignmentController::class, 'index']);
-        Route::get('assignments/{assignment}', [AssignmentController::class, 'show']);
-        Route::get('assignments/{assignment}/submit', [AssignmentController::class, 'submit']);
-        Route::get('exam', [ExamController::class, 'index']);
-        Route::get('exam/{id}', [ExamController::class, 'index']);
-        Route::get('exam/{id}/submit', [ExamController::class, 'index']);
+        // Route::get('assignments', [AssignmentController::class, 'index']);
+        // Route::get('assignments/{assignment}', [AssignmentController::class, 'show']);
+        // Route::get('assignments/{assignment}/submit', [AssignmentController::class, 'submit']);
+        // Route::get('exam', [ExamController::class, 'index']);
+        // Route::get('exam/{id}', [ExamController::class, 'index']);
+        // Route::get('exam/{id}/submit', [ExamController::class, 'index']);
     });
 
 

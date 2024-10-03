@@ -16,7 +16,7 @@ class isLecturerMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        return (Auth::user()->Lecturer_id) ?
+        return (Auth::user()->lecturer_id) ?
             $next($request) : response()->json(['error' => 'Unauthorized'], 403);
     }
 }

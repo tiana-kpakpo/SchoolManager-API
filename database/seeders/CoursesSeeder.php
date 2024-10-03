@@ -18,14 +18,8 @@ class CoursesSeeder extends Seeder
         $springSemester = Semester::where('name', 'Spring')->where('year', 2024)->firstOrFail();
         $fallSemester = Semester::where('name', 'Fall')->where('year', 2024)->firstOrFail();
 
-        $departments = [
-            'Computer Science' => 1,
-            'Mechanical Engineering' => 2,
-            'Business Administration' => 3,
-            'Arts' => 4,
-            'Medicine and Health' => 5,
-            'Law' => 6,
-        ];
+        $departments = Department::all()->keyBy('name');
+
 
         $coursesData = [
             'Computer Science' => [
@@ -143,25 +137,29 @@ class CoursesSeeder extends Seeder
                 continue;
             }
             $departmentId = $departments[$departmentName];
-            foreach ($years as $year => $semesters) {
-                foreach ($semesters as $semesterNumber => $courses) {
-                    $semesterId = $semesterNumber === 1 ? $springSemester->id : $fallSemester->id;
-                    foreach ($courses as $courseName) {
-                        // Generate unique code
-                        do {
-                            $code = strtoupper(substr($departmentName, 0, 3)) . str_pad(rand(101, 499), 3, '0', STR_PAD_LEFT);
-                            $exists = Course::where('code', $code)->exists();
-                        } while ($exists);
+            $department = $departments[$departmentName] ?? null;
+            if ($department) {
 
-                        Course::updateOrCreate(
-                            ['code' => $code], 
-                            [
-                                'name' => $courseName,
-                                'semester_id' => $semesterId,
-                                'department_id' => $departmentId,
-                                'year' => $year,
-                            ]
-                        );
+                foreach ($years as $year => $semesters) {
+                    foreach ($semesters as $semesterNumber => $courses) {
+                        $semesterId = $semesterNumber === 1 ? $springSemester->id : $fallSemester->id;
+                        foreach ($courses as $courseName) {
+                            // Generate unique code
+                            do {
+                                $code = strtoupper(substr($departmentName, 0, 3)) . str_pad(rand(101, 499), 3, '0', STR_PAD_LEFT);
+                                $exists = Course::where('code', $code)->exists();
+                            } while ($exists);
+
+                            Course::updateOrCreate(
+                                ['code' => $code],
+                                [
+                                    'name' => $courseName,
+                                    'semester_id' => $semesterId,
+                                    'department_id' => $department->id,
+                                    'year' => $year,
+                                ]
+                            );
+                        }
                     }
                 }
             }

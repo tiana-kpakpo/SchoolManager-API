@@ -19,7 +19,7 @@ class IncrementYearOfStudy extends Command
      *
      * @var string
      */
-    protected $description = 'Increment the year of study for all students';
+    protected $description = 'Increase the year of study for all students';
 
     /**
      * Execute the console command.
@@ -28,7 +28,7 @@ class IncrementYearOfStudy extends Command
     {
        User::where('is_admin', false || 'lecturer_id' === null)->increment('year_of_study');
 
-       $this->info('Year of study updated successfully');
+       $this->info('New Academic Year.');
 
     }
 }

@@ -21,10 +21,12 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name', 'email', 'password', 'profile_picture', 'phone', 'address', 'birth_date', 'age',
+        'name', 'email', 'password', 'profile_picture', 'gender', 'phone', 'address', 'birth_date', 'age',
         'is_admin', 'nationality', 'department', 'qualification', 'student_id', 'year_of_study', 'guardian_contact',
-        'date_of_admission', 'outstanding_fees', 'lecturer_id',
+        'date_of_admission', 'outstanding_fees', 'lecturer_id', 'faculty_id', 
     ];
+
+    protected $casts = ['outstanding_fees' => 'decimal:2'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -68,8 +70,9 @@ class User extends Authenticatable
 
     public function department(): BelongsTo
     {
-        return $this->belongsTo(Department::class, 'department', 'name');
+        return $this->belongsTo(Department::class);
     }
+
 
     protected static function boot()
     {
@@ -100,6 +103,16 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+
+    public function lecturerCourses(): BelongsToMany
+    {
+        return $this->belongsToMany(Course::class, 'course_lecturer', 'lecturer_id', 'course_id')
+                    ->withPivot('semester', 'year')
+                    ->withTimestamps();
+    }
+    
+
+
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class, 'user_id');
@@ -128,6 +141,11 @@ class User extends Authenticatable
 
         return 0;
     }
+
+    public function faculty(): BelongsTo
+{
+    return $this->belongsTo(Faculty::class);
+}
 
     // public function submissions()
     // {

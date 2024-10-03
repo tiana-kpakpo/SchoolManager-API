@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
+    
     public function createAssignment(Request $request)
     {
         $validatedData = $request->validate([
@@ -25,6 +26,7 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Assignment created successfully', 'assignment' => $assignment]);
     }
+
 
     public function createExam(Request $request)
     {
@@ -39,6 +41,7 @@ class UserController extends Controller
         return response()->json(['message' => 'Exam created successfully', 'exam' => $exam]);
     }
 
+
     public function gradeSubmission(Request $request, Submission $submission)
     {
         $validatedData = $request->validate([
@@ -52,6 +55,7 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Submission graded successfully', 'grade' => $grade]);
     }
+
 
     public function showLecturerCourses($lecturer_id)
     {

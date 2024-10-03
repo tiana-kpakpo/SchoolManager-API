@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('profile_picture')->nullable();
             $table->string('phone')->nullable();
+            $table->string('gender')->nullable();
             $table->string('nationality')->nullable();
             $table->string('address')->nullable();
             $table->date('birth_date')->nullable();
@@ -31,9 +32,11 @@ return new class extends Migration
             $table->integer('year_of_study')->nullable();
             $table->string('guardian_contact')->nullable();
             $table->date('date_of_admission')->nullable();
+            $table->foreignId('faculty_id')->nullable()->constrained('faculties')->cascadeOnDelete();
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
+
         });
 
 

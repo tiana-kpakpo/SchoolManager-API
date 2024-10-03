@@ -19,6 +19,8 @@ Artisan::command('update:year-of-study', function () {
         ->increment('year_of_study');
     
     Log::info('Year of study updated successfully.');
-})->purpose('Increment the year of study for all students')->yearlyOn(9, 7, '00:00');
+})->purpose('Increment the year of study for all students')
+// ->everyMinute();
+    ->yearlyOn(8, 28, '00:00');
 
 
